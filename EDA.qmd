@@ -19,7 +19,9 @@ library(gt)
 library(cowplot)
 library(PerformanceAnalytics)
 library(lattice)
+library(knitr)
 
+options(warn=-1)
 
 # Read in data:
 dat <- data.frame(read_excel('Data/Pinellas_County_Water_Quality_Data_2003_2024.xlsx', guess_max = 50000))
@@ -45,7 +47,7 @@ sumtbl <- function(data,title){
 }
 
 # Histograms
-histplt <- function(site, bins){
+hg <- function(site, bins){
   lapply(names(site)[4:ncol(site)], function(col_name){
   ggplot(site[4:ncol(site)] |> drop_na(), aes_string(x = col_name)) +
     geom_histogram(bins=bins,color = 'black', fill = 'lightblue') +
@@ -61,7 +63,7 @@ histplt <- function(site, bins){
 }
 
 # Boxplots
-boxplt <- function(site, bins){
+bp <- function(site, bins){
   lapply(names(site)[4:ncol(site)], function(col_name){
   ggplot(site |> drop_na(), aes_string(x = col_name)) +
     geom_boxplot(color = 'black', fill = 'lightblue') +
@@ -77,7 +79,7 @@ boxplt <- function(site, bins){
 }
 
 # Time-series plot
-tsplt <- function(site){
+ts <- function(site){
   lapply(names(site)[4:ncol(site)], function(col_name) {
   ggplot(site, aes_string(x = "Date", y = col_name)) +
     geom_line() +
@@ -92,6 +94,13 @@ tsplt <- function(site){
           panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5))
   })
 }
+
+plts <- function(site,bins,lab){
+  print(pgrid(hg(site,bins), paste(lab,"Histograms")))
+  print(pgrid(bp(site,bins), paste(lab,"Boxplots")))
+  print(pgrid(ts(site), paste(lab,"Time Series")))
+}
+
 
 # Plot grid 
 pgrid <- function(pfunc, lab){
@@ -132,9 +141,7 @@ Ebot <- Estr |>
 
 ```{r, echo=FALSE}
 sumtbl(stat(Esur), "Eastern Strata Surface Water Quality Summary Statistics")
-pgrid(histplt(Esur,30), "Eastern Strata Surface Water Quality Histograms")
-pgrid(boxplt(Esur,30), "Eastern Strata Surface Water Quality Boxplots")
-pgrid(tsplt(Esur), "Eastern Strata Surface Water Quality Time Series")
+plts(Esur,20,'Eastern Strata Surface Water Quality')
 chart.Correlation(Esur[4:ncol(Esur)], histogram=TRUE, method = 'spearman')
 ```
 
@@ -142,9 +149,7 @@ chart.Correlation(Esur[4:ncol(Esur)], histogram=TRUE, method = 'spearman')
 
 ```{r, echo=FALSE}
 sumtbl(stat(Ebot), "Eastern Strata Bottom Water Quality Summary Statistics")
-pgrid(histplt(Ebot,30), "Eastern Strata Bottom Water Quality Histograms")
-pgrid(boxplt(Ebot,30), "Eastern Strata Bottom Water Quality Boxplots")
-pgrid(tsplt(Ebot), "Eastern Strata Bottom Water Quality Time Series")
+plts(Ebot,20,'Eastern Strata Bottom Water Quality')
 chart.Correlation(Ebot[4:10], histogram=TRUE, method = 'spearman')
 ```
 
@@ -175,9 +180,7 @@ Wbot <- Wstr |>
 
 ```{r, echo=FALSE}
 sumtbl(stat(Wsur), "Western Strata Surface Water Quality Summary Statistics")
-pgrid(histplt(Wsur,30), "Western Strata Surface Water Quality Histograms")
-pgrid(boxplt(Wsur,30), "Western Strata Surface Water Quality Boxplots")
-pgrid(tsplt(Wsur), "Western Strata Surface Water Quality Time Series")
+plts(Wsur,20,'Western Strata Surface Water Quality')
 chart.Correlation(Wsur[4:ncol(Wsur)], histogram=TRUE, method = 'spearman')
 ```
 
@@ -185,9 +188,7 @@ chart.Correlation(Wsur[4:ncol(Wsur)], histogram=TRUE, method = 'spearman')
 
 ```{r, echo=FALSE}
 sumtbl(stat(Wbot), "Western Strata Bottom Water Quality Summary Statistics")
-pgrid(histplt(Wbot,30), "Western Strata Bottom Water Quality Histograms")
-pgrid(boxplt(Wbot,30), "Western Strata Bottom Water Quality Boxplots")
-pgrid(tsplt(Wbot), "Western Strata Bottom Water Quality Time Series")
+plts(Wbot,20,'Western Strata Bottom Water Quality')
 chart.Correlation(Wbot[4:10], histogram=TRUE, method = 'spearman')
 ```
 
@@ -220,9 +221,7 @@ Lbot <- LT |>
 
 ```{r, echo=FALSE}
 sumtbl(stat(Lsur), "Lake Tarpon Surface Water Quality Summary Statistics")
-pgrid(histplt(Lsur,15), "Lake Tarpon Surface Water Quality Histograms")
-pgrid(boxplt(Lsur,15), "Lake Tarpon Surface Water Quality Boxplots")
-pgrid(tsplt(Lsur), "Lake Tarpon Surface Water Quality Time Series")
+plts(Lsur,10,'Lake Tarpon Surface Water Quality')
 chart.Correlation(Lsur[4:ncol(Lsur)], histogram=TRUE, method = 'spearman')
 ```
 
@@ -230,9 +229,7 @@ chart.Correlation(Lsur[4:ncol(Lsur)], histogram=TRUE, method = 'spearman')
 
 ```{r, echo=FALSE}
 sumtbl(stat(Lbot), "Lake Tarpon Bottom Water Quality Summary Statistics")
-pgrid(histplt(Lbot,15), "Lake Tarpon Bottom Water Quality Histograms")
-pgrid(boxplt(Lbot,15), "Lake Tarpon Bottom Water Quality Boxplots")
-pgrid(tsplt(Lbot), "Lake Tarpon Bottom Water Quality Time Series")
+plts(Lbot,10,'Lake Tarpon Bottom Water Quality')
 chart.Correlation(Lbot[4:10], histogram=TRUE, method = 'spearman')
 ```
 
@@ -278,9 +275,7 @@ LSbot <- LS |>
 
 ```{r, echo=FALSE}
 sumtbl(stat(SAsur), "Lake Seminole North Lobe Surface Water Quality Summary Statistics")
-pgrid(histplt(SAsur,15), "Lake Seminole North Lobe Surface Water Quality Histograms")
-pgrid(boxplt(SAsur,15), "Lake Seminole North Lobe Surface Water Quality Boxplots")
-pgrid(tsplt(SAsur), "Lake Seminole North Lobe Surface Water Quality Time Series")
+plts(SAsur,10,'Lake Seminole North Lobe Surface Water Quality')
 chart.Correlation(SAsur[4:ncol(SAsur)], histogram=TRUE, method = 'spearman')
 ```
 
@@ -288,9 +283,7 @@ chart.Correlation(SAsur[4:ncol(SAsur)], histogram=TRUE, method = 'spearman')
 
 ```{r, echo=FALSE}
 sumtbl(stat(SAbot), "Lake Seminole North Lobe Bottom Water Quality Summary Statistics")
-pgrid(histplt(SAbot,15), "Lake Seminole North Lobe Bottom Water Quality Histograms")
-pgrid(boxplt(SAbot,15), "Lake Seminole North Lobe Bottom Water Quality Boxplots")
-pgrid(tsplt(SAbot), "Lake Seminole North Lobe Bottom Water Quality Time Series")
+plts(SAbot,10,'Lake Seminole North Lobe Bottom Water Quality')
 chart.Correlation(SAbot[4:10], histogram=TRUE, method = 'spearman')
 ```
 
@@ -298,9 +291,7 @@ chart.Correlation(SAbot[4:10], histogram=TRUE, method = 'spearman')
 
 ```{r, echo=FALSE}
 sumtbl(stat(SBsur), "Lake Seminole South Lobe Surface Water Quality Summary Statistics")
-pgrid(histplt(SBsur,15), "Lake Seminole South Lobe Surface Water Quality Histograms")
-pgrid(boxplt(SBsur,15), "Lake Seminole South Lobe Surface Water Quality Boxplots")
-pgrid(tsplt(SBsur), "Lake Seminole South Lobe Surface Water Quality Time Series")
+plts(SBsur,10,'Lake Seminole South Lobe Surface Water Quality')
 chart.Correlation(SBsur[4:ncol(SBsur)], histogram=TRUE, method = 'spearman')
 ```
 
@@ -308,9 +299,7 @@ chart.Correlation(SBsur[4:ncol(SBsur)], histogram=TRUE, method = 'spearman')
 
 ```{r, echo=FALSE}
 sumtbl(stat(SBbot), "Lake Seminole South Lobe Bottom Water Quality Summary Statistics")
-pgrid(histplt(SBbot,15), "Lake Seminole South Lobe Bottom Water Quality Histograms")
-pgrid(boxplt(SBbot,15), "Lake Seminole South Lobe Bottom Water Quality Boxplots")
-pgrid(tsplt(SBbot), "Lake Seminole South Lobe Bottom Water Quality Time Series")
+plts(SBbot,10,'Lake Seminole South Lobe Bottom Water Quality')
 chart.Correlation(SBbot[4:10], histogram=TRUE, method = 'spearman')
 ```
 
@@ -318,9 +307,7 @@ chart.Correlation(SBbot[4:10], histogram=TRUE, method = 'spearman')
 
 ```{r, echo=FALSE}
 sumtbl(stat(LSsur), "Lake Seminole Combined Surface Water Quality Summary Statistics")
-pgrid(histplt(LSsur,15), "Lake Seminole Combined Surface Water Quality Histograms")
-pgrid(boxplt(LSsur,15), "Lake Seminole Combined Surface Water Quality Boxplots")
-pgrid(tsplt(LSsur), "Lake Seminole Combined Surface Water Quality Time Series")
+plts(LSsur,10,'Lake Seminole Combined Surface Water Quality')
 chart.Correlation(LSsur[4:ncol(LSsur)], histogram=TRUE, method = 'spearman')
 ```
 
@@ -328,9 +315,7 @@ chart.Correlation(LSsur[4:ncol(LSsur)], histogram=TRUE, method = 'spearman')
 
 ```{r, echo=FALSE}
 sumtbl(stat(LSbot), "Lake Seminole Combined Bottom Water Quality Summary Statistics")
-pgrid(histplt(LSbot,15), "Lake Seminole Combined Bottom Water Quality Histograms")
-pgrid(boxplt(LSbot,15), "Lake Seminole Combined Bottom Water Quality Boxplots")
-pgrid(tsplt(LSbot), "Lake Seminole Combined Bottom Water Quality Time Series")
+plts(LSbot,10,'Lake Seminole Combined Bottom Water Quality')
 chart.Correlation(LSbot[4:10], histogram=TRUE, method = 'spearman')
 ```
 
